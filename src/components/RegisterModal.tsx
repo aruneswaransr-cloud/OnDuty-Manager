@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { X, AlertTriangle, CheckCircle2, Loader2, Building2, School, Calendar } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle2, Loader2, Building2, School, Calendar, MapPin } from 'lucide-react';
 import { supabase, type OdCategory, type OdRegistration, CATEGORY_LIMITS, CATEGORY_LABELS } from '@/lib/supabase';
 
 interface RegisterModalProps {
@@ -29,6 +29,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
   const [rollNumber, setRollNumber] = useState('');
   const [category, setCategory] = useState<OdCategory>('other_college');
   const [reason, setReason] = useState('');
+  const [collegeName, setCollegeName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -41,6 +42,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
       setRollNumber('');
       setCategory('other_college');
       setReason('');
+      setCollegeName('');
       setError(null);
       setSuccess(false);
     }
@@ -88,6 +90,10 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
       setError('Please fill in your name and roll number.');
       return;
     }
+    if (category === 'other_college' && !collegeName.trim()) {
+      setError('Please enter the college name you are attending.');
+      return;
+    }
     if (isFull) {
       setError(`The limit for ${CATEGORY_LABELS[category]} has been reached (${limit} students).`);
       return;
@@ -103,6 +109,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
       od_date: dateKey(fromDate),
       od_end_date: isRange ? dateKey(toDate) : null,
       reason: reason.trim(),
+      college_name: category === 'other_college' ? collegeName.trim() : null,
     });
 
     setSubmitting(false);
@@ -238,6 +245,25 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
               </div>
               <span className="font-semibold whitespace-nowrap tabular-nums">{currentCount}/{limit}</span>
             </div>
+
+            {/* College name — only for Other College */}
+            {category === 'other_college' && (
+              <div>
+                <label className="block text-xs font-semibold text-[#385579] mb-1.5">
+                  College Name <span className="text-red-500 font-normal">*</span>
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#87a2c8] pointer-events-none" />
+                  <input
+                    type="text"
+                    value={collegeName}
+                    onChange={e => setCollegeName(e.target.value)}
+                    placeholder="Enter the college you are attending"
+                    className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-[#d5e1f1] focus:border-[#2279e8] focus:ring-1 focus:ring-blue-100 outline-none transition-all text-sm text-[#13284b] placeholder:text-[#87a2c8]"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Limit warning */}
             {isFull && (

@@ -15,6 +15,7 @@ export interface OdRegistration {
   od_date: string;
   od_end_date: string | null;
   reason: string;
+  college_name: string | null;
   created_at: string;
 }
 

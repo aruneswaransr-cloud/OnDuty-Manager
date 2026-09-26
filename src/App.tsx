@@ -235,7 +235,7 @@ export default function App() {
                                 <span className="font-semibold text-[#24436d]">{od.student_name}</span>
                                 <span>{od.roll_number}</span>
                                 <span>{od.reason || 'On-Duty'}</span>
-                                <span>{od.category === 'inter_college' ? 'Inter-College' : 'Other College'}</span>
+                                <span>{od.category === 'inter_college' ? 'Inter-College' : (od.college_name || 'Other College')}</span>
                                 <span>
                                   <b className={`rounded-full px-2 py-1 text-[10px] ${od.category === 'inter_college' ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-blue-100 text-blue-700'}`}>
                                     {od.category === 'inter_college' ? 'Inter-College' : 'Other College'}

@@ -112,6 +112,7 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
                   </div>
                   <div className="min-w-0">
                     <span className="font-semibold text-sm text-[#24436d] truncate block">{od.student_name}</span>
+                    {isOther && od.college_name && <span className="text-xs text-blue-600 font-medium truncate block">{od.college_name}</span>}
                     {od.reason && <span className="text-xs text-[#87a2c8] truncate block">{od.reason}</span>}
                   </div>
                 </div>
