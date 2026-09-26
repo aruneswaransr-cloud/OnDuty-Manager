@@ -101,7 +101,7 @@ export default function App() {
   const currentTitle = viewTitles[navView];
 
   return (
-    <div className="dashboard-shell min-h-screen bg-[#f4f8fd] text-[#13284b]">
+    <div className="min-h-screen bg-[#f4f8fd] text-[#13284b]">
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 bg-[#102443] text-white lg:flex lg:flex-col">
         <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">

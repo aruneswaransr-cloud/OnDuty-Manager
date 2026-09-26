@@ -2,99 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-.dashboard-shell {
-  background: #0f1728 !important;
-  color: #dbe7f7;
-}
-
-.dashboard-shell header {
-  background: rgba(18, 29, 48, 0.94) !important;
-  border-color: #2a3a55 !important;
-}
-
-.dashboard-shell [class~="bg-white"],
-.dashboard-shell [class~="bg-white/95"] {
-  background-color: #172338 !important;
-}
-
-.dashboard-shell [class~="bg-[#f4f8fd]"],
-.dashboard-shell [class~="bg-[#f7faff]"],
-.dashboard-shell [class~="bg-slate-50"],
-.dashboard-shell [class~="bg-slate-50/30"] {
-  background-color: #111d31 !important;
-}
-
-.dashboard-shell [class*="border-"] {
-  border-color: #2b3d59 !important;
-}
-
-.dashboard-shell [class*="text-[#"] {
-  color: #dbe7f7 !important;
-}
-
-.dashboard-shell input {
-  background: #111d31 !important;
-  border-color: #344966 !important;
-  color: #e5eefb !important;
-}
-
-.dashboard-shell input::placeholder {
-  color: #8fa4c1 !important;
-}
-
-.dashboard-shell [class*="hover:bg-slate-100"]:hover,
-.dashboard-shell [class*="hover:bg-slate-50"]:hover,
-.dashboard-shell [class*="hover:bg-blue-50"]:hover {
-  background-color: #213451 !important;
-}
-
-.dashboard-shell [class*="bg-blue-50"],
-.dashboard-shell [class*="bg-blue-100"] {
-  background-color: #16345d !important;
-}
-
-.dashboard-shell [class*="bg-fuchsia-50"],
-.dashboard-shell [class*="bg-fuchsia-100"] {
-  background-color: #35254e !important;
-}
-
-.dashboard-shell [class*="bg-emerald-50"],
-.dashboard-shell [class*="bg-emerald-100"] {
-  background-color: #123b38 !important;
-}
-
-.dashboard-shell [class*="bg-orange-50"],
-.dashboard-shell [class*="bg-orange-100"] {
-  background-color: #45301e !important;
-}
-
-.dashboard-shell [class*="text-slate-400"],
-.dashboard-shell [class*="text-slate-500"] {
-  color: #9bb0ca !important;
-}
-
-.dashboard-shell [class*="text-blue-700"],
-.dashboard-shell [class*="text-blue-600"] {
-  color: #74b2ff !important;
-}
-
-.dashboard-shell [class*="text-fuchsia-700"] {
-  color: #d7a9ff !important;
-}
-
-.dashboard-shell [class*="text-emerald-700"],
-.dashboard-shell [class*="text-emerald-600"] {
-  color: #62dfbb !important;
-}
-
-.dashboard-shell [class*="text-orange-700"] {
-  color: #ffc27c !important;
-}
-
-.dashboard-shell [class*="shadow-sm"] {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
-}
-
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -122,16 +29,13 @@
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #425573;
+  background: rgb(203 213 225);
   border-radius: 9999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #60799e;
+  background: rgb(148 163 184);
 }
