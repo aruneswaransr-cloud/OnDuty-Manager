@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  CalendarDays, Plus, Bell, LayoutDashboard, FileText, BarChart3,
+  GraduationCap, Plus, Bell, LayoutDashboard, FileText, BarChart3,
   CalendarRange, Search, ChevronRight, Users, Building2, School, CalendarClock,
 } from 'lucide-react';
 import { supabase, type OdRegistration } from '@/lib/supabase';
@@ -104,8 +104,8 @@ export default function App() {
       {/* Sidebar */}
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-56 bg-[#102443] text-white lg:flex lg:flex-col">
         <div className="flex items-center gap-3 border-b border-white/10 px-5 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#1d5fd1]">
-            <CalendarDays className="h-6 w-6" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2868ed] text-white shadow-lg shadow-blue-900/30">
+            <GraduationCap className="h-6 w-6" />
           </div>
           <div>
             <p className="text-sm font-bold leading-tight">College OD</p>
@@ -183,11 +183,14 @@ export default function App() {
                         <div className="rounded-full bg-white/70 p-3">
                           <Icon className="h-6 w-6" />
                         </div>
-                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-700">Available</span>
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${card.color === 'orange' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>{card.color === 'orange' ? 'Upcoming' : 'Available'}</span>
                       </div>
                       <p className="mt-2 text-xs font-bold text-[#18345f]">{card.label}</p>
                       <p className="mt-1 text-2xl font-bold text-[#122b52]">{card.value}</p>
                       <p className="text-[11px] text-[#55739d]">{card.note}</p>
+                      {card.color === 'blue' && <p className="mt-2 text-xs font-bold text-emerald-600">↑ +2 from yesterday</p>}
+                      {card.color === 'green' && <div className="mt-2 h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, otherToday * 10)}%` }} /></div>}
+                      {card.color === 'purple' && <div className="mt-2 h-2 rounded-full bg-slate-100"><div className="h-full rounded-full bg-violet-500" style={{ width: `${Math.min(100, interToday * 20)}%` }} /></div>}
                     </div>
                   );
                 })}
@@ -442,7 +445,7 @@ export default function App() {
                         <div className="rounded-full bg-white/70 p-3">
                           <Icon className="h-6 w-6" />
                         </div>
-                        <span className="rounded-full bg-emerald-100 px-2 py-1 text-[10px] font-bold text-emerald-700">Available</span>
+                        <span className={`rounded-full px-2 py-1 text-[10px] font-bold ${card.color === 'orange' ? 'bg-orange-100 text-orange-700' : 'bg-emerald-100 text-emerald-700'}`}>{card.color === 'orange' ? 'Upcoming' : 'Available'}</span>
                       </div>
                       <p className="mt-2 text-xs font-bold text-[#18345f]">{card.label}</p>
                       <p className="mt-1 text-2xl font-bold text-[#122b52]">{card.value}</p>

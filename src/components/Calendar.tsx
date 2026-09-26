@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { OdRegistration } from '@/lib/supabase';
 
 interface CalendarProps {
@@ -59,33 +59,36 @@ export default function Calendar({ ods, onDateClick }: CalendarProps) {
     <div className="rounded-xl border border-[#dce7f5] bg-white shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5edf7]">
-        <h2 className="text-base font-bold text-[#13284b] tracking-tight">
-          {MONTHS[currentMonth.getMonth()]} <span className="text-[#87a2c8] font-normal">{currentMonth.getFullYear()}</span>
+        <h2 className="flex items-center gap-2 text-base font-bold text-[#13284b] tracking-tight">
+          <CalendarDays className="h-5 w-5 text-[#385579]" />
+          OD Calendar
         </h2>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <button
             onClick={prevMonth}
-            className="p-1.5 rounded-lg text-[#87a2c8] hover:text-[#13284b] hover:bg-slate-100 transition-colors active:scale-90"
+            className="p-2 rounded-lg border border-[#d5e1f1] text-[#385579] hover:bg-blue-50 transition-colors active:scale-90"
             aria-label="Previous month"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
-            onClick={goToday}
-            className="px-2.5 py-1 rounded-lg text-xs font-semibold text-[#1678ed] hover:bg-blue-50 transition-colors"
-          >
-            Today
-          </button>
-          <button
             onClick={nextMonth}
-            className="p-1.5 rounded-lg text-[#87a2c8] hover:text-[#13284b] hover:bg-slate-100 transition-colors active:scale-90"
+            className="p-2 rounded-lg border border-[#d5e1f1] text-[#385579] hover:bg-blue-50 transition-colors active:scale-90"
             aria-label="Next month"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
+          <button
+            onClick={goToday}
+            className="px-3 py-2 rounded-lg border border-[#d5e1f1] text-xs font-semibold text-[#385579] hover:bg-blue-50 transition-colors"
+          >
+            Today
+          </button>
+          <span className="hidden sm:flex items-center gap-2 rounded-lg border border-[#d5e1f1] px-3 py-2 text-sm font-semibold text-[#13284b]">
+            {MONTHS[currentMonth.getMonth()]} {currentMonth.getFullYear()}
+          </span>
         </div>
       </div>
-
       {/* Weekday labels */}
       <div className="grid grid-cols-7 border-b border-[#e5edf7]">
         {WEEKDAYS.map(wd => (
@@ -120,19 +123,15 @@ export default function Calendar({ ods, onDateClick }: CalendarProps) {
                   <span className="w-1.5 h-1.5 rounded-full bg-[#1678ed]" />
                 )}
               </div>
-              <div className="space-y-1">
-                {otherCount > 0 && (
-                  <div className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-100 truncate">
-                    <span className="w-1 h-1 rounded-full bg-blue-500 shrink-0" />
-                    {otherCount} OC
-                  </div>
-                )}
-                {interCount > 0 && (
-                  <div className="flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100 truncate">
-                    <span className="w-1 h-1 rounded-full bg-fuchsia-500 shrink-0" />
-                    {interCount} IC
-                  </div>
-                )}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1 text-[10px] font-medium text-[#58749d] truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  Other: {otherCount}/10
+                </div>
+                <div className="flex items-center gap-1 text-[10px] font-medium text-[#58749d] truncate">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  Inter: {interCount}/5
+                </div>
               </div>
             </button>
           );
@@ -140,15 +139,12 @@ export default function Calendar({ ods, onDateClick }: CalendarProps) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-5 px-5 py-3 border-t border-[#e5edf7] bg-[#f7faff] text-[11px] text-[#58749d] font-medium">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-          Other College
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-fuchsia-500" />
-          Inter College
-        </div>
+      <div className="flex flex-wrap items-center gap-5 px-5 py-3 border-t border-[#e5edf7] bg-white text-[11px] text-[#58749d] font-medium">
+        <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />Available</div>
+        <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" />Almost Full</div>
+        <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500" />Full</div>
+        <div className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm border-2 border-blue-500" />Today</div>
+        <div className="flex items-center gap-1.5"><span className="h-3 w-4 rounded-sm bg-blue-100" />Multi-day Event</div>
       </div>
     </div>
   );
