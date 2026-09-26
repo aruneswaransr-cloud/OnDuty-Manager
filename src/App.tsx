@@ -59,6 +59,7 @@ export default function App() {
   const interToday = todayOds.filter(o => o.category === 'inter_college').length;
 
   const upcomingList = ods.filter(o => o.od_date > todayKey).slice(0, 4);
+  const recentRegistrations = [...ods].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 5);
 
   const cards = [
     { label: "Today's OD", value: String(todayOds.length), note: 'students going on OD today', icon: Users, color: 'blue' },
@@ -91,7 +92,7 @@ export default function App() {
   };
 
   const viewTitles: Record<NavView, { title: string; subtitle: string }> = {
-    dashboard: { title: 'College On-Duty Management', subtitle: 'Overview of today and upcoming on-duty registrations' },
+    dashboard: { title: 'College On-Duty Management', subtitle: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) },
     calendar: { title: 'OD Calendar', subtitle: 'Click any date to register an OD for that day' },
     records: { title: 'OD Records', subtitle: 'Search, filter, and manage all registered on-duty records' },
     reports: { title: 'Reports', subtitle: 'Summary statistics and capacity utilization' },
@@ -324,11 +325,27 @@ export default function App() {
                       )}
                     </div>
                   </div>
+
+                  {/* Recent registrations */}
+                  <div className="rounded-xl border border-[#dce7f5] bg-white shadow-sm overflow-hidden">
+                    <div className="flex items-center justify-between border-b border-[#e5edf7] px-5 py-4">
+                      <h2 className="flex items-center gap-2 text-sm font-bold"><FileText className="h-5 w-5 text-[#173e78]" />Recent Registrations</h2>
+                      <button onClick={() => setNavView('records')} className="flex items-center text-[11px] font-bold text-blue-600">View All Records <ChevronRight className="h-3 w-3" /></button>
+                    </div>
+                    <div className="grid grid-cols-[1fr_0.8fr_1fr_1fr] bg-[#f7faff] px-5 py-2 text-[10px] font-bold uppercase text-[#58749d]"><span>Student</span><span>Roll No</span><span>Event</span><span>College</span></div>
+                    {recentRegistrations.length === 0 ? <p className="p-8 text-center text-sm text-slate-400">No registrations yet.</p> : recentRegistrations.map(od => <div key={od.id} className="grid grid-cols-[1fr_0.8fr_1fr_1fr] items-center border-t border-[#edf2f8] px-5 py-3 text-[11px] text-[#385579]"><span className="truncate font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span className="truncate">{od.reason || 'On-Duty'}</span><span className="truncate">{od.college_name || (od.category === 'inter_college' ? 'Inter-College' : 'Other College')}</span></div>)}
+                  </div>
+
+                  {/* Quick actions */}
+                  <div className="rounded-xl border border-[#dce7f5] bg-white shadow-sm overflow-hidden">
+                    <div className="flex items-center gap-2 border-b border-[#e5edf7] px-5 py-4 text-sm font-bold"><span className="text-xl leading-none text-blue-600">ϟ</span>Quick Actions</div>
+                    <div className="grid grid-cols-2 gap-3 p-5"><button onClick={() => setRegisterDate(new Date())} className="flex items-center justify-center gap-2 rounded-lg bg-[#2868ed] px-3 py-3 text-xs font-bold text-white transition hover:bg-blue-700"><Plus className="h-4 w-4" />Register OD</button><button onClick={() => setNavView('calendar')} className="flex items-center justify-center gap-2 rounded-lg border border-blue-200 px-3 py-3 text-xs font-bold text-blue-600 transition hover:bg-blue-50"><CalendarRange className="h-4 w-4" />View Calendar</button></div>
+                  </div>
                 </div>
               </section>
 
               {/* OD list with filter tabs */}
-              <section className="space-y-4">
+              <section className="hidden space-y-4">
                 <div className="flex items-center gap-2">
                   {(['all', 'past', 'future'] as ListFilter[]).map(f => (
                     <button
