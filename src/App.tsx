@@ -222,7 +222,7 @@ export default function App() {
                         onClick={() => setNavView('records')}
                         className="flex items-center gap-1 rounded-lg border border-blue-100 px-3 py-1.5 text-[11px] font-bold text-blue-600"
                       >
-                        View All Today's OD
+                        View All OD
                         <ChevronRight className="h-3 w-3" />
                       </button>
                     </div>
