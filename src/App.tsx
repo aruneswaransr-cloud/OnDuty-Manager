@@ -15,6 +15,16 @@ function dateKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function fmtDate(dateStr: string) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function fmtDayMonth(dateStr: string) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
+}
+
 export default function App() {
   const [ods, setOds] = useState<OdRegistration[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,7 +102,7 @@ export default function App() {
   };
 
   const viewTitles: Record<NavView, { title: string; subtitle: string }> = {
-    dashboard: { title: 'College On-Duty Management', subtitle: today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) },
+    dashboard: { title: 'College On-Duty Management', subtitle: today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
     calendar: { title: 'OD Calendar', subtitle: 'Click any date to register an OD for that day' },
     records: { title: 'OD Records', subtitle: 'Search, filter, and manage all registered on-duty records' },
     reports: { title: 'Reports', subtitle: 'Summary statistics and capacity utilization' },
@@ -245,7 +255,7 @@ export default function App() {
                                     {od.category === 'inter_college' ? 'Inter-College' : 'Other College'}
                                   </b>
                                 </span>
-                                <span>{isRange ? `${od.od_date} → ${od.od_end_date}` : od.od_date}</span>
+                                <span>{isRange ? `${fmtDate(od.od_date)} → ${fmtDate(od.od_end_date!)}` : fmtDate(od.od_date)}</span>
                               </div>
                             );
                           })
@@ -309,7 +319,7 @@ export default function App() {
                             className="flex w-full items-center gap-3 rounded-lg border border-[#edf2f8] p-2 text-left hover:bg-blue-50"
                           >
                             <span className="rounded-lg bg-blue-50 px-2 py-1 text-center text-[10px] font-bold text-blue-700">
-                              {od.od_date.slice(5).replace('-', '/')}
+                              {fmtDayMonth(od.od_date)}
                             </span>
                             <span className="min-w-0 flex-1">
                               <b className="block truncate text-[11px]">{od.reason || 'On-Duty'}</b>
