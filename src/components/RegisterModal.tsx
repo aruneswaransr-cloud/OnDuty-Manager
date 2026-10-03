@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { X, AlertTriangle, CheckCircle2, Loader2, Building2, School, Calendar, MapPin } from 'lucide-react';
+import { X, AlertTriangle, CheckCircle2, Loader2, Building2, School, Calendar, MapPin, Clock } from 'lucide-react';
 import { supabase, type OdCategory, type OdRegistration, CATEGORY_LIMITS, CATEGORY_LABELS } from '@/lib/supabase';
+
+type SubmitOutcome = 'approved' | 'pending' | null;
 
 interface RegisterModalProps {
   date: Date | null;
@@ -32,7 +34,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
   const [collegeName, setCollegeName] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [outcome, setOutcome] = useState<SubmitOutcome>(null);
 
   useEffect(() => {
     if (date) {
@@ -44,7 +46,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
       setReason('');
       setCollegeName('');
       setError(null);
-      setSuccess(false);
+      setOutcome(null);
     }
   }, [date]);
 
@@ -94,33 +96,34 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
       setError('Please enter the college name you are attending.');
       return;
     }
-    if (isFull) {
-      setError(`The limit for ${CATEGORY_LABELS[category]} has been reached (${limit} students).`);
-      return;
-    }
 
     setSubmitting(true);
     setError(null);
 
-    const { error: insertError } = await supabase.from('ods').insert({
-      student_name: studentName.trim(),
-      roll_number: rollNumber.trim(),
-      category,
-      od_date: dateKey(fromDate),
-      od_end_date: isRange ? dateKey(toDate) : null,
-      reason: reason.trim(),
-      college_name: category === 'other_college' ? collegeName.trim() : null,
+    const { data, error: rpcError } = await supabase.rpc('submit_od_request', {
+      p_student_name: studentName.trim(),
+      p_register_number: rollNumber.trim(),
+      p_category: category,
+      p_od_date: dateKey(fromDate),
+      p_od_end_date: isRange ? dateKey(toDate) : null,
+      p_reason: reason.trim(),
+      p_college_name: category === 'other_college' ? collegeName.trim() : null,
     });
 
     setSubmitting(false);
 
-    if (insertError) {
-      setError('Something went wrong. Please try again.');
+    if (rpcError || !data) {
+      setError('Something went wrong while submitting your OD. Please try again.');
       return;
     }
 
-    setSuccess(true);
-    setTimeout(() => onRegistered(), 1000);
+    const result = data as { status: string };
+    if (result.status === 'Approved') {
+      setOutcome('approved');
+    } else {
+      setOutcome('pending');
+    }
+    setTimeout(() => onRegistered(), 1200);
   };
 
   return (
@@ -147,13 +150,27 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
           </button>
         </div>
 
-        {success ? (
+        {outcome ? (
           <div className="flex flex-col items-center justify-center py-14 px-6">
-            <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
-              <CheckCircle2 className="w-7 h-7 text-green-600" />
-            </div>
-            <p className="text-base font-bold text-[#13284b]">OD Registered</p>
-            <p className="text-xs text-[#87a2c8] mt-1">Your on-duty has been saved successfully.</p>
+            {outcome === 'approved' ? (
+              <>
+                <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mb-3">
+                  <CheckCircle2 className="w-7 h-7 text-green-600" />
+                </div>
+                <p className="text-base font-bold text-[#13284b]">OD Registered</p>
+                <p className="text-xs text-[#87a2c8] mt-1">Your on-duty has been saved successfully.</p>
+              </>
+            ) : (
+              <>
+                <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center mb-3">
+                  <Clock className="w-7 h-7 text-amber-600" />
+                </div>
+                <p className="text-base font-bold text-[#13284b]">Sent for Advisor Approval</p>
+                <p className="text-xs text-[#87a2c8] mt-1 text-center max-w-[260px]">
+                  The daily limit for this category has been reached. Your request has been forwarded to the assigned advisor for approval.
+                </p>
+              </>
+            )}
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4">
@@ -267,10 +284,10 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
 
             {/* Limit warning */}
             {isFull && (
-              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-50 border border-red-100 animate-[shake_0.3s_ease-out]">
-                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0 mt-px" />
-                <p className="text-xs font-medium text-red-700 leading-relaxed">
-                  {CATEGORY_LABELS[category]} limit reached ({limit} students). Choose a different category or date.
+              <div className="flex items-start gap-2 p-2.5 rounded-lg bg-amber-50 border border-amber-100">
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-px" />
+                <p className="text-xs font-medium text-amber-700 leading-relaxed">
+                  {CATEGORY_LABELS[category]} limit reached ({limit} students). Your request will be sent to the advisor for approval.
                 </p>
               </div>
             )}
@@ -322,7 +339,7 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
 
             <button
               type="submit"
-              disabled={submitting || isFull || dateInvalid}
+              disabled={submitting || dateInvalid}
               className="w-full py-2.5 rounded-lg bg-[#1678ed] text-white text-sm font-semibold hover:bg-[#0d67d4] transition-colors active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {submitting ? (
@@ -330,6 +347,8 @@ export default function RegisterModal({ date, allOds, onClose, onRegistered }: R
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Registering...
                 </>
+              ) : isFull ? (
+                'Send for Advisor Approval'
               ) : (
                 'Register OD'
               )}
