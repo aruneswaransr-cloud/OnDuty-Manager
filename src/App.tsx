@@ -282,7 +282,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
             <div className="flex items-center gap-2 border-b border-[#e5edf7] px-5 py-4"><CalendarClock className="h-5 w-5 text-[#173e78]" /><h2 className="text-sm font-bold">Student Details & OD Summary</h2></div>
             <table className="min-w-[800px] w-full text-left text-xs"><thead className="bg-[#f7faff] text-[#58749d]"><tr><th className="px-4 py-3">Name</th><th className="px-4 py-3">Register No.</th><th className="px-4 py-3">Department</th><th className="px-4 py-3">Attendance</th><th className="px-4 py-3">This Month OD</th><th className="px-4 py-3">Total OD</th></tr></thead>
             <tbody>{students.map(s => <tr key={s.id} className="border-t border-[#edf2f8]"><td className="px-4 py-3 font-semibold">{s.name}</td><td className="px-4 py-3">{s.register_number}</td><td className="px-4 py-3">{s.department || '—'}{s.class_section ? ` · ${s.class_section}` : ''}</td><td className="px-4 py-3">{s.attendance_percentage ?? '—'}%</td><td className="px-4 py-3"><span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-700">{s.month_od}</span></td><td className="px-4 py-3"><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">{s.total_od}</span></td></tr>)}</tbody></table>
-            {students.length === 0 && <p className="p-10 text-center text-sm text-[#87a2c8]">No student records yet. Upload attendance to see students here.</p>}
+            {students.length === 0 && <p className="p-10 text-center text-sm text-[#87a2c8]">No students yet. Students who register an OD will appear here automatically. Upload attendance to add their attendance percentage.</p>}
           </div>
         </div>}
       </main>
