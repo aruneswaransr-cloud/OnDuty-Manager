@@ -1,0 +1,2 @@
+[functions.create-advisor]
+verify_jwt = true
