@@ -30,6 +30,15 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const studentOdCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const o of ods) {
+      const r = o.roll_number.toLowerCase();
+      counts[r] = (counts[r] ?? 0) + 1;
+    }
+    return counts;
+  }, [ods]);
+
   const filtered = useMemo(() => {
     let result = [...ods];
     if (filter === 'past') result = result.filter(o => new Date(o.od_date + 'T00:00:00') < today);
@@ -79,11 +88,12 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
       </div>
 
       {/* Table header */}
-      <div className="hidden md:grid grid-cols-[1fr_120px_160px_180px_40px] gap-3 px-5 py-2.5 bg-[#f7faff] border-b border-[#e5edf7] text-[11px] font-semibold uppercase tracking-wider text-[#58749d]">
+      <div className="hidden md:grid grid-cols-[1fr_120px_140px_160px_80px_40px] gap-3 px-5 py-2.5 bg-[#f7faff] border-b border-[#e5edf7] text-[11px] font-semibold uppercase tracking-wider text-[#58749d]">
         <span>Student</span>
         <span>Roll No.</span>
         <span>Category</span>
         <span>OD Period</span>
+        <span>Total OD</span>
         <span />
       </div>
 
@@ -102,7 +112,7 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
             return (
               <div
                 key={od.id}
-                className="group grid grid-cols-1 md:grid-cols-[1fr_120px_160px_180px_40px] gap-3 px-5 py-3.5 hover:bg-blue-50/40 transition-colors items-center animate-[slideInRight_0.3s_ease-out_both]"
+                className="group grid grid-cols-1 md:grid-cols-[1fr_120px_140px_160px_80px_40px] gap-3 px-5 py-3.5 hover:bg-blue-50/40 transition-colors items-center animate-[slideInRight_0.3s_ease-out_both]"
                 style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
               >
                 {/* Student */}
@@ -129,6 +139,8 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
                 <span className={`text-sm text-[#58749d] ${isRange ? 'font-medium' : ''}`}>
                   {formatRange(od)}
                 </span>
+                {/* Total OD count */}
+                <span><b className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">{studentOdCounts[od.roll_number.toLowerCase()] ?? 1}</b></span>
                 {/* Delete */}
                 <button
                   onClick={() => onDelete(od.id)}
