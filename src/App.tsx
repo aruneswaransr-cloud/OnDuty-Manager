@@ -14,6 +14,7 @@ import ProtectedStaff from '@/components/ProtectedStaff';
 
 type ListFilter = 'all' | 'past' | 'future';
 type NavView = 'dashboard' | 'calendar' | 'records' | 'reports' | 'approvals' | 'attendance' | 'students';
+type ReportTab = 'overall' | 'today' | 'upcoming';
 
 function dateKey(d: Date) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
 function fmtDate(dateStr: string) { return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
@@ -31,6 +32,8 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
   const [registerDate, setRegisterDate] = useState<Date | null>(null);
   const [listFilter, setListFilter] = useState<ListFilter>('all');
   const [navView, setNavView] = useState<NavView>('dashboard');
+  const [reportTab, setReportTab] = useState<ReportTab>('overall');
+  const [calendarDate, setCalendarDate] = useState<Date | null>(null);
 
   // Advisor state
   const [requests, setRequests] = useState<OdRequest[]>([]);
@@ -139,7 +142,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
 
   const cards = [
     { label: "Today's OD", value: String(todayOds.length), note: 'students going on OD today', icon: Users, color: 'blue' },
-    { label: 'Other College', value: `${otherToday} / 10`, note: `${10 - otherToday} slots available`, icon: Building2, color: 'green' },
+    { label: 'Other College', value: `${otherToday} / 15`, note: `${15 - otherToday} slots available`, icon: Building2, color: 'green' },
     { label: 'Inter-College', value: `${interToday} / 5`, note: `${5 - interToday} slots available`, icon: School, color: 'purple' },
     { label: 'Upcoming OD', value: String(upcomingOds), note: 'students with upcoming OD', icon: CalendarClock, color: 'orange' },
   ];
@@ -148,7 +151,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
   const navItems: { label: string; icon: typeof LayoutDashboard; view: NavView | 'register'; badge?: number }[] = [
     { label: 'Dashboard', icon: LayoutDashboard, view: 'dashboard' },
     { label: 'OD Calendar', icon: CalendarRange, view: 'calendar' },
-    { label: 'Register OD', icon: Plus, view: 'register' },
+    ...(isAdvisor ? [] : [{ label: 'Register OD', icon: Plus, view: 'register' as NavView | 'register' }]),
     { label: 'OD Records', icon: FileText, view: 'records' },
     { label: 'Reports', icon: BarChart3, view: 'reports' },
     ...(isAdvisor ? [
@@ -161,7 +164,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
   const handleNavClick = (item: typeof navItems[number]) => item.view === 'register' ? setRegisterDate(new Date()) : setNavView(item.view);
   const viewTitles: Record<NavView, { title: string; subtitle: string }> = {
     dashboard: { title: 'College On-Duty Management', subtitle: today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) },
-    calendar: { title: 'OD Calendar', subtitle: 'Click any date to register an OD for that day' },
+    calendar: { title: 'OD Calendar', subtitle: isAdvisor ? 'Click any date to view OD details for that day' : 'Click any date to register an OD for that day' },
     records: { title: 'OD Records', subtitle: 'Search, filter, and manage all registered on-duty records' },
     reports: { title: 'Reports', subtitle: 'Summary statistics and capacity utilization' },
     approvals: { title: 'Approval Requests', subtitle: 'Review overflow OD requests from students assigned to you' },
@@ -202,7 +205,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
         <div className="mx-auto flex max-w-[1500px] items-center justify-between gap-4">
           <div><h1 className="text-xl font-bold tracking-tight text-[#13284b]">{currentTitle.title}</h1><p className="text-xs text-[#52709e]">{currentTitle.subtitle}</p></div>
           <div className="flex items-center gap-3">
-            <button onClick={() => setRegisterDate(new Date())} className="flex items-center gap-2 rounded-lg bg-[#1678ed] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0d67d4]"><Plus className="h-4 w-4" />Register OD</button>
+            {!isAdvisor && <button onClick={() => setRegisterDate(new Date())} className="flex items-center gap-2 rounded-lg bg-[#1678ed] px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-[#0d67d4]"><Plus className="h-4 w-4" />Register OD</button>}
           </div>
         </div>
       </header>
@@ -233,11 +236,11 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
                   {todayOds.length === 0 ? <p className="p-8 text-center text-sm text-slate-400">No students registered for today yet.</p> : todayOds.slice(0, 6).map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1.1fr_1fr_0.9fr_0.9fr] items-center border-t border-[#edf2f8] px-5 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span>{od.college_name || 'Other College'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter-College' : 'Other College'}</b></span><span>{fmtDate(od.od_date)}{od.od_end_date ? ` → ${fmtDate(od.od_end_date)}` : ''}</span></div>)}
                 </div></div>
               </div>
-              <Calendar ods={ods} onDateClick={setRegisterDate} />
+              <Calendar ods={ods} onDateClick={isAdvisor ? setCalendarDate : setRegisterDate} />
             </div>
             <div className="space-y-5">
               <div className="rounded-xl border border-[#dce7f5] bg-white p-4 shadow-sm"><h2 className="mb-4 flex items-center gap-2 text-sm font-bold"><BarChart3 className="h-5 w-5 text-[#173e78]" />Daily Capacity</h2><div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-4"><p className="text-xs font-bold">Other College OD</p><p className="mt-1 text-xl font-bold">{otherToday} / 10</p><div className="mt-2 h-1.5 rounded-full bg-blue-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, otherToday * 10)}%` }} /></div><p className="mt-2 text-[10px] text-slate-500">{10 - otherToday} slots remaining</p></div>
+                <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-4"><p className="text-xs font-bold">Other College OD</p><p className="mt-1 text-xl font-bold">{otherToday} / 15</p><div className="mt-2 h-1.5 rounded-full bg-blue-100"><div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.min(100, (otherToday / 15) * 100)}%` }} /></div><p className="mt-2 text-[10px] text-slate-500">{15 - otherToday} slots remaining</p></div>
                 <div className="rounded-lg border border-fuchsia-100 bg-fuchsia-50/40 p-4"><p className="text-xs font-bold">Inter-College OD</p><p className="mt-1 text-xl font-bold">{interToday} / 5</p><div className="mt-2 h-1.5 rounded-full bg-fuchsia-100"><div className="h-full rounded-full bg-fuchsia-500" style={{ width: `${Math.min(100, interToday * 20)}%` }} /></div><p className="mt-2 text-[10px] text-slate-500">{5 - interToday} slots remaining</p></div>
               </div></div>
               <div className="rounded-xl border border-[#dce7f5] bg-white p-4 shadow-sm"><h2 className="flex items-center gap-2 text-sm font-bold"><CalendarClock className="h-5 w-5 text-[#173e78]" />Upcoming On-Duty</h2><div className="mt-3 space-y-2">{upcomingList.length ? upcomingList.map(od => <button key={od.id} onClick={() => setRegisterDate(new Date(`${od.od_date}T00:00:00`))} className="flex w-full items-center gap-3 rounded-lg border border-[#edf2f8] p-2 text-left"><span className="rounded-lg bg-blue-50 px-2 py-1 text-center text-[10px] font-bold text-blue-700">{fmtDayMonth(od.od_date)}</span><span className="min-w-0 flex-1"><b className="block truncate text-[11px]">{od.reason || 'On-Duty'}</b><small className="text-[10px] text-slate-500">{od.student_name}</small></span></button>) : <p className="py-6 text-center text-xs text-slate-400">No upcoming ODs.</p>}</div></div>
@@ -246,11 +249,28 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
           </section>
         </>}
 
-        {navView === 'calendar' && <Calendar ods={ods} onDateClick={setRegisterDate} />}
+        {navView === 'calendar' && <Calendar ods={ods} onDateClick={isAdvisor ? setCalendarDate : setRegisterDate} />}
 
         {navView === 'records' && <section className="space-y-4"><div className="flex gap-2">{(['all', 'past', 'future'] as ListFilter[]).map(filter => <button key={filter} onClick={() => setListFilter(filter)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${listFilter === filter ? 'bg-[#1678ed] text-white' : 'border border-slate-200 bg-white text-slate-500'}`}>{filter === 'all' ? 'All ODs' : filter === 'past' ? 'Past' : 'Upcoming'}</button>)}</div>{loading ? <div className="rounded-xl bg-white p-12 text-center">Loading...</div> : <OdList ods={ods} filter={listFilter} onDelete={handleDelete} />}</section>}
 
-        {navView === 'reports' && <section className="rounded-xl border border-[#dce7f5] bg-white p-6 shadow-sm"><h2 className="text-lg font-bold">Reports</h2><div className="mt-5 grid gap-4 md:grid-cols-3"><div className="rounded-lg bg-blue-50 p-4"><p className="text-xs font-bold">Overall OD Records</p><p className="mt-2 text-3xl font-bold">{ods.length}</p></div><div className="rounded-lg bg-emerald-50 p-4"><p className="text-xs font-bold">Today</p><p className="mt-2 text-3xl font-bold">{todayOds.length}</p></div><div className="rounded-lg bg-orange-50 p-4"><p className="text-xs font-bold">Upcoming</p><p className="mt-2 text-3xl font-bold">{upcomingOds}</p></div></div></section>}
+        {navView === 'reports' && <section className="space-y-4">
+          <div className="flex gap-2">
+            {([['overall','Overall OD Records'],['today','Today'],['upcoming','Upcoming']] as [ReportTab, string][]).map(([tab, label]) => <button key={tab} onClick={() => setReportTab(tab)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${reportTab === tab ? 'bg-[#1678ed] text-white' : 'border border-slate-200 bg-white text-slate-500'}`}>{label}</button>)}
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            <button onClick={() => setReportTab('overall')} className={`rounded-lg p-4 text-left transition ${reportTab === 'overall' ? 'ring-2 ring-blue-400' : ''} bg-blue-50`}><p className="text-xs font-bold">Overall OD Records</p><p className="mt-2 text-3xl font-bold">{ods.length}</p></button>
+            <button onClick={() => setReportTab('today')} className={`rounded-lg p-4 text-left transition ${reportTab === 'today' ? 'ring-2 ring-emerald-400' : ''} bg-emerald-50`}><p className="text-xs font-bold">Today</p><p className="mt-2 text-3xl font-bold">{todayOds.length}</p></button>
+            <button onClick={() => setReportTab('upcoming')} className={`rounded-lg p-4 text-left transition ${reportTab === 'upcoming' ? 'ring-2 ring-orange-400' : ''} bg-orange-50`}><p className="text-xs font-bold">Upcoming</p><p className="mt-2 text-3xl font-bold">{upcomingOds}</p></button>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-[#dce7f5] bg-white shadow-sm">
+            <div className="min-w-[680px]">
+              <div className="grid grid-cols-[1.2fr_0.8fr_1.1fr_1fr_0.9fr_0.9fr] bg-[#f7faff] px-5 py-2 text-[10px] font-bold uppercase text-[#58749d]"><span>Student Name</span><span>Roll No</span><span>Event</span><span>College</span><span>Type</span><span>OD Period</span></div>
+              {(reportTab === 'overall' ? ods : reportTab === 'today' ? todayOds : ods.filter(o => o.od_date > todayKey)).length === 0
+                ? <p className="p-8 text-center text-sm text-slate-400">No records to display.</p>
+                : (reportTab === 'overall' ? ods : reportTab === 'today' ? todayOds : ods.filter(o => o.od_date > todayKey)).map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1.1fr_1fr_0.9fr_0.9fr] items-center border-t border-[#edf2f8] px-5 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span>{od.college_name || '—'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter-College' : 'Other College'}</b></span><span>{fmtDate(od.od_date)}{od.od_end_date ? ` → ${fmtDate(od.od_end_date)}` : ''}</span></div>)}
+            </div>
+          </div>
+        </section>}
 
         {navView === 'approvals' && <div className="space-y-4">
           {advisorError && <p className="rounded-lg bg-red-50 px-4 py-3 text-xs font-medium text-red-700">{advisorError}</p>}
@@ -288,8 +308,46 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
       </main>
 
       <RegisterModal date={registerDate} allOds={ods} onClose={() => setRegisterDate(null)} onRegistered={() => { setRegisterDate(null); fetchOds(); }} />
+      {calendarDate && <CalendarDateModal date={calendarDate} ods={ods} onClose={() => setCalendarDate(null)} />}
     </div>
   </div>;
+}
+
+function CalendarDateModal({ date, ods, onClose }: { date: Date; ods: OdRegistration[]; onClose: () => void }) {
+  const key = dateKey(date);
+  const dayOds = ods.filter(o => { const end = o.od_end_date ?? o.od_date; return key >= o.od_date && key <= end; });
+  const otherCount = dayOds.filter(o => o.category === 'other_college').length;
+  const interCount = dayOds.filter(o => o.category === 'inter_college').length;
+  const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#13284b]/30 backdrop-blur-sm animate-[fadeIn_0.15s_ease-out]" onClick={onClose}>
+      <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#dce7f5] overflow-hidden animate-[slideUp_0.2s_ease-out]" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#e5edf7]">
+          <div>
+            <h3 className="text-base font-bold text-[#13284b]">OD Details</h3>
+            <p className="text-xs text-[#87a2c8] mt-0.5">{dateStr}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-[#87a2c8] hover:text-[#13284b] hover:bg-slate-100 transition-colors active:scale-90" aria-label="Close"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="px-5 py-4">
+          <div className="flex gap-3 mb-4">
+            <div className="flex-1 rounded-lg bg-blue-50 p-3 text-center"><p className="text-[10px] font-bold text-blue-700">Other College</p><p className="text-lg font-bold text-blue-700">{otherCount}</p></div>
+            <div className="flex-1 rounded-lg bg-fuchsia-50 p-3 text-center"><p className="text-[10px] font-bold text-fuchsia-700">Inter College</p><p className="text-lg font-bold text-fuchsia-700">{interCount}</p></div>
+            <div className="flex-1 rounded-lg bg-slate-50 p-3 text-center"><p className="text-[10px] font-bold text-slate-700">Total</p><p className="text-lg font-bold text-slate-700">{dayOds.length}</p></div>
+          </div>
+          {dayOds.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">No students on OD for this date.</p> : (
+            <div className="overflow-x-auto">
+              <div className="min-w-[480px]">
+                <div className="grid grid-cols-[1.2fr_0.8fr_1fr_0.8fr] bg-[#f7faff] px-4 py-2 text-[10px] font-bold uppercase text-[#58749d]"><span>Student Name</span><span>Roll No</span><span>Reason</span><span>Type</span></div>
+                {dayOds.map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1fr_0.8fr] items-center border-t border-[#edf2f8] px-4 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter' : 'Other'}</b></span></div>)}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default function App() {

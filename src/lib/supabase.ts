@@ -65,7 +65,7 @@ export interface Notification {
 }
 
 export const CATEGORY_LIMITS: Record<OdCategory, number> = {
-  other_college: 10,
+  other_college: 15,
   inter_college: 5,
 };
 
