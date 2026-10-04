@@ -113,7 +113,11 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
             return (
               <div
                 key={od.id}
-                className="group grid grid-cols-1 md:grid-cols-[1fr_120px_140px_160px_80px_40px] gap-3 px-5 py-3.5 hover:bg-blue-50/40 transition-colors items-center animate-[slideInRight_0.3s_ease-out_both]"
+                role="button"
+                tabIndex={0}
+                onClick={() => setSelectedStudentRoll(od.roll_number)}
+                onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); setSelectedStudentRoll(od.roll_number); } }}
+                className="group grid cursor-pointer grid-cols-1 md:grid-cols-[1fr_120px_140px_160px_80px_40px] gap-3 px-5 py-3.5 hover:bg-blue-50/40 transition-colors items-center animate-[slideInRight_0.3s_ease-out_both] focus:bg-blue-50/60 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-300"
                 style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
               >
                 {/* Student */}
@@ -122,7 +126,7 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
                     {isOther ? <Building2 className="w-3.5 h-3.5 text-blue-600" /> : <School className="w-3.5 h-3.5 text-fuchsia-600" />}
                   </div>
                   <div className="min-w-0">
-                    <button type="button" onClick={() => setSelectedStudentRoll(od.roll_number)} className="font-semibold text-sm text-[#24436d] truncate block text-left hover:text-[#1678ed] hover:underline transition-colors">{od.student_name}</button>
+                    <span className="font-semibold text-sm text-[#24436d] truncate block">{od.student_name}</span>
                     {isOther && od.college_name && <span className="text-xs text-blue-600 font-medium truncate block">{od.college_name}</span>}
                     {od.reason && <span className="text-xs text-[#87a2c8] truncate block">{od.reason}</span>}
                   </div>
@@ -144,7 +148,7 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
                 <span><b className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">{studentOdCounts[od.roll_number.toLowerCase()] ?? 1}</b></span>
                 {/* Delete */}
                 <button
-                  onClick={() => onDelete(od.id)}
+                  onClick={event => { event.stopPropagation(); onDelete(od.id); }}
                   className="p-1.5 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100 active:scale-90 justify-self-end"
                   aria-label="Delete OD"
                 >
