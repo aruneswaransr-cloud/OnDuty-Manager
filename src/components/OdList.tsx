@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Trash2, Building2, School, Search, CalendarClock } from 'lucide-react';
+import { Trash2, Building2, School, Search, CalendarClock, X } from 'lucide-react';
 import type { OdRegistration } from '@/lib/supabase';
 import { CATEGORY_LABELS } from '@/lib/supabase';
 
@@ -26,6 +26,7 @@ function formatRange(od: OdRegistration) {
 export default function OdList({ ods, filter, onDelete }: OdListProps) {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'other_college' | 'inter_college'>('all');
+  const [selectedStudentRoll, setSelectedStudentRoll] = useState<string | null>(null);
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -121,7 +122,7 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
                     {isOther ? <Building2 className="w-3.5 h-3.5 text-blue-600" /> : <School className="w-3.5 h-3.5 text-fuchsia-600" />}
                   </div>
                   <div className="min-w-0">
-                    <span className="font-semibold text-sm text-[#24436d] truncate block">{od.student_name}</span>
+                    <button type="button" onClick={() => setSelectedStudentRoll(od.roll_number)} className="font-semibold text-sm text-[#24436d] truncate block text-left hover:text-[#1678ed] hover:underline transition-colors">{od.student_name}</button>
                     {isOther && od.college_name && <span className="text-xs text-blue-600 font-medium truncate block">{od.college_name}</span>}
                     {od.reason && <span className="text-xs text-[#87a2c8] truncate block">{od.reason}</span>}
                   </div>
@@ -154,6 +155,45 @@ export default function OdList({ ods, filter, onDelete }: OdListProps) {
           })
         )}
       </div>
+
+      {selectedStudentRoll && (() => {
+        const studentRecords = ods.filter(o => o.roll_number.toLowerCase() === selectedStudentRoll.toLowerCase());
+        const student = studentRecords[0];
+        if (!student) return null;
+        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+        const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        const monthRecords = studentRecords.filter(o => {
+          const odDate = new Date(o.od_date + 'T00:00:00');
+          return odDate >= monthStart && odDate < nextMonthStart;
+        });
+        const monthName = monthStart.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#13284b]/30 p-4 backdrop-blur-sm" onClick={() => setSelectedStudentRoll(null)}>
+            <div className="w-full max-w-md overflow-hidden rounded-2xl border border-[#dce7f5] bg-white shadow-2xl" onClick={event => event.stopPropagation()}>
+              <div className="flex items-center justify-between border-b border-[#e5edf7] px-5 py-4">
+                <div>
+                  <h3 className="text-base font-bold text-[#13284b]">{student.student_name}</h3>
+                  <p className="mt-0.5 text-xs text-[#87a2c8]">Roll No. {student.roll_number}</p>
+                </div>
+                <button type="button" onClick={() => setSelectedStudentRoll(null)} className="rounded-lg p-1.5 text-[#87a2c8] transition-colors hover:bg-slate-100 hover:text-[#13284b]" aria-label="Close student summary"><X className="h-4 w-4" /></button>
+              </div>
+              <div className="grid gap-3 p-5 sm:grid-cols-2">
+                <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  <p className="text-xs font-bold text-blue-700">OD taken in {monthName}</p>
+                  <p className="mt-2 text-3xl font-bold text-blue-800">{monthRecords.length}</p>
+                  <p className="mt-1 text-[11px] text-blue-700">{monthRecords.length === 1 ? 'OD record' : 'OD records'}</p>
+                </div>
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                  <p className="text-xs font-bold text-emerald-700">Total OD taken</p>
+                  <p className="mt-2 text-3xl font-bold text-emerald-800">{studentRecords.length}</p>
+                  <p className="mt-1 text-[11px] text-emerald-700">All recorded dates</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
