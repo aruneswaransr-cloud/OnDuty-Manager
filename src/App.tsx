@@ -236,7 +236,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
                   {todayOds.length === 0 ? <p className="p-8 text-center text-sm text-slate-400">No students registered for today yet.</p> : todayOds.slice(0, 6).map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1.1fr_1fr_0.9fr_0.9fr] items-center border-t border-[#edf2f8] px-5 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span>{od.college_name || 'Other College'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter-College' : 'Other College'}</b></span><span>{fmtDate(od.od_date)}{od.od_end_date ? ` → ${fmtDate(od.od_end_date)}` : ''}</span></div>)}
                 </div></div>
               </div>
-              <Calendar ods={ods} onDateClick={isAdvisor ? setCalendarDate : setRegisterDate} />
+              <Calendar ods={ods} onDateClick={setCalendarDate} />
             </div>
             <div className="space-y-5">
               <div className="rounded-xl border border-[#dce7f5] bg-white p-4 shadow-sm"><h2 className="mb-4 flex items-center gap-2 text-sm font-bold"><BarChart3 className="h-5 w-5 text-[#173e78]" />Daily Capacity</h2><div className="grid gap-3 sm:grid-cols-2">
@@ -249,7 +249,7 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
           </section>
         </>}
 
-        {navView === 'calendar' && <Calendar ods={ods} onDateClick={isAdvisor ? setCalendarDate : setRegisterDate} />}
+        {navView === 'calendar' && <Calendar ods={ods} onDateClick={setCalendarDate} />}
 
         {navView === 'records' && <section className="space-y-4"><div className="flex gap-2">{(['all', 'past', 'future'] as ListFilter[]).map(filter => <button key={filter} onClick={() => setListFilter(filter)} className={`rounded-lg px-4 py-2 text-sm font-semibold ${listFilter === filter ? 'bg-[#1678ed] text-white' : 'border border-slate-200 bg-white text-slate-500'}`}>{filter === 'all' ? 'All ODs' : filter === 'past' ? 'Past' : 'Upcoming'}</button>)}</div>{loading ? <div className="rounded-xl bg-white p-12 text-center">Loading...</div> : <OdList ods={ods} filter={listFilter} onDelete={handleDelete} />}</section>}
 
@@ -308,12 +308,12 @@ function MainDashboard({ profile }: { profile: StaffProfile | null }) {
       </main>
 
       <RegisterModal date={registerDate} allOds={ods} onClose={() => setRegisterDate(null)} onRegistered={() => { setRegisterDate(null); fetchOds(); }} />
-      {calendarDate && <CalendarDateModal date={calendarDate} ods={ods} onClose={() => setCalendarDate(null)} />}
+      {calendarDate && <CalendarDateModal date={calendarDate} ods={ods} isAdvisor={isAdvisor} onClose={() => setCalendarDate(null)} onRegister={(d) => { setCalendarDate(null); setRegisterDate(d); }} />}
     </div>
   </div>;
 }
 
-function CalendarDateModal({ date, ods, onClose }: { date: Date; ods: OdRegistration[]; onClose: () => void }) {
+function CalendarDateModal({ date, ods, isAdvisor, onClose, onRegister }: { date: Date; ods: OdRegistration[]; isAdvisor: boolean; onClose: () => void; onRegister: (d: Date) => void }) {
   const key = dateKey(date);
   const dayOds = ods.filter(o => { const end = o.od_end_date ?? o.od_date; return key >= o.od_date && key <= end; });
   const otherCount = dayOds.filter(o => o.category === 'other_college').length;
@@ -334,7 +334,7 @@ function CalendarDateModal({ date, ods, onClose }: { date: Date; ods: OdRegistra
           <div className="flex gap-3 mb-4">
             <div className="flex-1 rounded-lg bg-blue-50 p-3 text-center"><p className="text-[10px] font-bold text-blue-700">Other College</p><p className="text-lg font-bold text-blue-700">{otherCount}</p></div>
             <div className="flex-1 rounded-lg bg-fuchsia-50 p-3 text-center"><p className="text-[10px] font-bold text-fuchsia-700">Inter College</p><p className="text-lg font-bold text-fuchsia-700">{interCount}</p></div>
-            <div className="flex-1 rounded-lg bg-slate-50 p-3 text-center"><p className="text-[10px] font-bold text-slate-700">Total</p><p className="text-lg font-bold text-slate-700">{dayOds.length}</p></div>
+            <div className="flex-1 rounded-lg bg-emerald-50 p-3 text-center"><p className="text-[10px] font-bold text-emerald-700">Total Students</p><p className="text-lg font-bold text-emerald-700">{dayOds.length}</p></div>
           </div>
           {dayOds.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">No students on OD for this date.</p> : (
             <div className="overflow-x-auto">
@@ -345,6 +345,7 @@ function CalendarDateModal({ date, ods, onClose }: { date: Date; ods: OdRegistra
             </div>
           )}
         </div>
+        {!isAdvisor && <div className="border-t border-[#e5edf7] px-5 py-4"><button onClick={() => onRegister(date)} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1678ed] py-2.5 text-sm font-bold text-white hover:bg-[#0d67d4] transition-colors"><Plus className="h-4 w-4" />Register OD for this date</button></div>}
       </div>
     </div>
   );

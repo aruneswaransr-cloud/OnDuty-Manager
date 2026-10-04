@@ -126,7 +126,7 @@ export default function Calendar({ ods, onDateClick }: CalendarProps) {
               <div className="space-y-1.5">
                 <div className="flex items-center gap-1 text-[10px] font-medium text-[#58749d] truncate">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  Other: {otherCount}/10
+                  Other: {otherCount}/15
                 </div>
                 <div className="flex items-center gap-1 text-[10px] font-medium text-[#58749d] truncate">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
