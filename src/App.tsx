@@ -320,6 +320,12 @@ function CalendarDateModal({ date, ods, isAdvisor, onClose, onRegister }: { date
   const interCount = dayOds.filter(o => o.category === 'inter_college').length;
   const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+  const studentOdCounts = ods.reduce<Record<string, number>>((acc, o) => {
+    const r = o.roll_number.toLowerCase();
+    acc[r] = (acc[r] ?? 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#13284b]/30 backdrop-blur-sm animate-[fadeIn_0.15s_ease-out]" onClick={onClose}>
       <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#dce7f5] overflow-hidden animate-[slideUp_0.2s_ease-out]" onClick={e => e.stopPropagation()}>
@@ -339,8 +345,8 @@ function CalendarDateModal({ date, ods, isAdvisor, onClose, onRegister }: { date
           {dayOds.length === 0 ? <p className="py-8 text-center text-sm text-slate-400">No students on OD for this date.</p> : (
             <div className="overflow-x-auto">
               <div className="min-w-[480px]">
-                <div className="grid grid-cols-[1.2fr_0.8fr_1fr_0.8fr] bg-[#f7faff] px-4 py-2 text-[10px] font-bold uppercase text-[#58749d]"><span>Student Name</span><span>Roll No</span><span>Reason</span><span>Type</span></div>
-                {dayOds.map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1fr_0.8fr] items-center border-t border-[#edf2f8] px-4 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter' : 'Other'}</b></span></div>)}
+                <div className="grid grid-cols-[1.2fr_0.8fr_1fr_0.7fr_0.6fr] bg-[#f7faff] px-4 py-2 text-[10px] font-bold uppercase text-[#58749d]"><span>Student Name</span><span>Roll No</span><span>Reason</span><span>Type</span><span>Total OD</span></div>
+                {dayOds.map(od => <div key={od.id} className="grid grid-cols-[1.2fr_0.8fr_1fr_0.7fr_0.6fr] items-center border-t border-[#edf2f8] px-4 py-3 text-[11px] text-[#385579]"><span className="font-semibold text-[#24436d]">{od.student_name}</span><span>{od.roll_number}</span><span>{od.reason || 'On-Duty'}</span><span><b className="rounded-full bg-blue-100 px-2 py-1 text-[10px] text-blue-700">{od.category === 'inter_college' ? 'Inter' : 'Other'}</b></span><span><b className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">{studentOdCounts[od.roll_number.toLowerCase()] ?? 1}</b></span></div>)}
               </div>
             </div>
           )}
